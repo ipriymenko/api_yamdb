@@ -8,4 +8,4 @@ def confirmation_code_make(user: User) -> str:
 
 
 def confirmation_code_check(user: User, confirmation_code: str) -> bool:
-    return default_token_generator.chek_token(user, confirmation_code)
+    return default_token_generator.check_token(user, confirmation_code)
