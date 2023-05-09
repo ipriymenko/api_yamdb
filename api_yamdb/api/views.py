@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
 from smtplib import SMTPException
+from django.http import HttpResponse
 
 from api.exceptions import APIConfirmationEmailSendError
 from api.permissions import IsOwnerOrHasAdminRole
