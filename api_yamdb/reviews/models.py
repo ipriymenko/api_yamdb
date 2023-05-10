@@ -20,17 +20,18 @@ class Title(models.Model):
 
     class Meta:
         verbose_name = 'Произведение'
-        verbose_name_plural = 'Произведение'
+        verbose_name_plural = 'Произведения'
         ordering = ['name']
 
 
 class Category(models.Model):
     name = models.CharField(
-        max_length=200,
+        max_length=256,
         db_index=True,
         verbose_name='Категория'
     )
     slug = models.SlugField(
+        max_length=50,
         unique=True,
         verbose_name='Ссылка на группу'
     )
@@ -40,17 +41,18 @@ class Category(models.Model):
 
     class Meta:
         verbose_name = 'Категория'
-        verbose_name_plural = 'Категория'
+        verbose_name_plural = 'Категории'
         ordering = ['id']
 
 
 class Genre(models.Model):
     name = models.CharField(
-        max_length=200,
+        max_length=256,
         db_index=True,
         verbose_name='Жанр'
     )
     slug = models.SlugField(
+        max_length=50,
         unique=True,
         verbose_name='Ссылка на жанр'
     )
@@ -60,7 +62,7 @@ class Genre(models.Model):
 
     class Meta:
         verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанр'
+        verbose_name_plural = 'Жанры'
         ordering = ['id']
 
 

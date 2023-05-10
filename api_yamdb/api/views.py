@@ -1,24 +1,51 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins, permissions
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenViewBase
-from django.http import HttpResponse
 
 from api.serializers import GetTokenSerializer
+from reviews.models import Category, Title, Genre
+from .serializers import CategorySerializer, TitleSerializer, GenreSerializer
+# from .permission import IsAdmin, IsReadOnly
 
 
 class AUTHGetTokenView(TokenViewBase):
     serializer_class = GetTokenSerializer
 
 
-def titles(request, titles_id):
-    return HttpResponse(f"Главная страница приложения reviews "
-                        f"произведения по номеру категории {titles_id}")
+class CategoryViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
+    # permission_classes = [IsAdmin | IsReadOnly]
+    authentication_classes = ()
 
 
-def categories(request, slug):
-    return HttpResponse(
-        f"<h1>Страница отображения по категориям</h1><p>{slug}</p>")
+class TitleViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    # permission_classes = (permissions.AllowAny,)
+    pagination_class = PageNumberPagination
+    authentication_classes = ()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
-def genres(request, slug):
-    return HttpResponse(
-        f"<h1>Страница отображения по жанрам</h1><p>{slug}</p>")
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    # permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
