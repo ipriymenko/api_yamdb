@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from api.utils import confirmation_code_make, confirmation_code_check
 from users.models import User
 from users.validators import UsernameValidator
+from reviews.models import Review, Title
 
 
 class GetTokenSerializer(serializers.Serializer):
@@ -54,3 +55,32 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserPatchMeSerializer(UserSerializer):
     role = serializers.CharField(read_only=True)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    title = serializers.SlugRelatedField(
+        slug_field='id',
+        many=False,
+        read_only=True,
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+        read_only_fields = ('id', 'pub_date',)
+
+    def validate(self, data):
+        request = self.context['request']
+        author = request.user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        if (
+            request.method == 'POST'
+            and Review.objects.filter(title=title, author=author).exists()
+        ):
+            raise ValidationError('Нельзя оставить больше одного отзыва.')
+        return data

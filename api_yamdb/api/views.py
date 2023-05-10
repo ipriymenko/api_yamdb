@@ -10,9 +10,10 @@ from rest_framework_simplejwt.views import TokenViewBase
 from smtplib import SMTPException
 
 from api.exceptions import APIConfirmationEmailSendError
-from api.permissions import IsAdmin, IsReadOnly
-from api.serializers import GetTokenSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer
+from api.permissions import IsAdmin, IsReadOnly, IsModerator, IsAuthorOrReadOnly
+from api.serializers import GetTokenSerializer, ReviewSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer
 from users.models import User
+from reviews.models import Title
 
 
 class GetTokenView(TokenViewBase):
@@ -63,3 +64,19 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             serializer = self.get_serializer(user)
         return Response(serializer.data)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+# Разрешения для всех, кроме анонимов. Так как нет единого пермишена,
+# использовала те, что есть
+    permission_classes = (IsAdmin, IsModerator, IsAuthorOrReadOnly)
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer.save(author=self.request.user, title=title)
