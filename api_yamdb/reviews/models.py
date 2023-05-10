@@ -10,6 +10,7 @@ class Title(models.Model):
         max_length=255,
         verbose_name='Название'
     )
+    description = models.CharField(max_length=256, null=True, blank=True)
     year = models.IntegerField()
     category = models.ForeignKey(
         'Category',

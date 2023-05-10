@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -63,14 +64,30 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = '__all__'
-        model = Title
-
-
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
         model = Genre
+
+
+class TitleGetSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, instance):
+        return instance.reviews.aggregate(Avg('score')).get('score__avg')
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+
+class TitlePatchSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
+    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
+
+    class Meta:
+        fields = '__all__'
+        model = Title

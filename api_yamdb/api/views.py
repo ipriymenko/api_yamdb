@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins, permissions
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenViewBase
@@ -9,10 +10,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from smtplib import SMTPException
 
+from api.filters import TitleFilter
 from reviews.models import Category, Title, Genre
 from api.exceptions import APIConfirmationEmailSendError
 from api.permissions import IsAdmin, IsReadOnly
-from api.serializers import GetTokenSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer, CategorySerializer, TitleSerializer, GenreSerializer
+from api.serializers import GetTokenSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer, CategorySerializer, TitleGetSerializer, TitlePatchSerializer, GenreSerializer
 from users.models import User
 
 
@@ -30,7 +32,9 @@ class CategoryViewSet(
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
     permission_classes = [IsAdmin | IsReadOnly]
-    authentication_classes = ()
+    lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
 
 
 class TitleViewSet(
@@ -43,20 +47,29 @@ class TitleViewSet(
 ):
 
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-    # permission_classes = (permissions.AllowAny,)
+    permission_classes = (IsAdmin | IsReadOnly,)
     pagination_class = PageNumberPagination
-    authentication_classes = ()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = (TitleFilter)
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleGetSerializer
+        return TitlePatchSerializer
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = (permissions.AllowAny,)
-    authentication_classes = ()
+    permission_classes = (IsAdmin | IsReadOnly,)
+    lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
 
 
 class SignupView(CreateAPIView):
