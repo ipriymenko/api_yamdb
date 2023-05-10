@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -6,6 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from api.utils import confirmation_code_make, confirmation_code_check
 from users.models import User
+from reviews.models import Category, Title, Genre
 from users.validators import UsernameValidator
 
 
@@ -54,3 +56,38 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserPatchMeSerializer(UserSerializer):
     role = serializers.CharField(read_only=True)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genre
+
+
+class TitleGetSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, instance):
+        return instance.reviews.aggregate(Avg('score')).get('score__avg')
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+
+class TitlePatchSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
+    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
+
+    class Meta:
+        fields = '__all__'
+        model = Title
