@@ -31,20 +31,13 @@ class CategoryViewSet(
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
-    permission_classes = [IsAdmin | IsReadOnly]
+    permission_classes = (IsAdmin | IsReadOnly)
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
 
-class TitleViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.all()
     permission_classes = (IsAdmin | IsReadOnly,)
