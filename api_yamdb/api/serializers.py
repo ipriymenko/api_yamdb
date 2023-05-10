@@ -2,7 +2,7 @@ from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from api.utils import confirmation_code_make, confirmation_code_check
 from users.models import User
@@ -21,7 +21,7 @@ class GetTokenSerializer(serializers.Serializer):
             raise ValidationError('Confirmation code not requested. Use auth/signup first!')
         if not confirmation_code_check(user, user.confirmation_code):
             raise ValidationError('Confirmation need to be refreshed. Use auth/signup!')
-        return {'token': str(RefreshToken.for_user(user))}
+        return {'token': str(AccessToken.for_user(user))}
 
 
 class SignupSerializer(serializers.ModelSerializer):
