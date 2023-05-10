@@ -31,6 +31,5 @@ jobs:
         python manage.py migrate
     - name: Run Tests
       run: |
-        cd ..
-        python -m pytest ./tests/test_00_user_registration.py ./tests/test_01_users.py
+        python -m pytest tests/test_00_user_registration.py tests/test_01_users.py
 
