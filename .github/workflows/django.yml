@@ -32,5 +32,5 @@ jobs:
     - name: Run Tests
       run: |
         cd ..
-        pytest tests/test_00_user_registration.py tests/test_01_users.py
+        python -m pytest ./tests/test_00_user_registration.py ./tests/test_01_users.py
 
