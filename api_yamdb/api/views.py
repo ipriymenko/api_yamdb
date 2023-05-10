@@ -31,7 +31,7 @@ class CategoryViewSet(
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
-    permission_classes = (IsAdmin | IsReadOnly)
+    permission_classes = (IsAdmin | IsReadOnly,)
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
