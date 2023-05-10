@@ -8,22 +8,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
 from smtplib import SMTPException
-from django.http import HttpResponse
 
 from api.exceptions import APIConfirmationEmailSendError
-from api.permissions import IsOwnerOrHasAdminRole
+from api.permissions import IsAdmin, IsReadOnly
 from api.serializers import GetTokenSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer
 from users.models import User
 
 
-class AUTHGetTokenView(TokenViewBase):
+class GetTokenView(TokenViewBase):
     serializer_class = GetTokenSerializer
 
 
-class AUTHSignupView(CreateAPIView):
+class SignupView(CreateAPIView):
     serializer_class = SignupSerializer
-    authentication_classes = ()
-    permission_classes = ()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -45,14 +42,12 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
-
-    permission_classes = (IsOwnerOrHasAdminRole,)
+    permission_classes = (IsAdmin,)
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
     lookup_field = 'username'
 
-    # def update(self, request, *args, **kwargs):
-    #     raise MethodNotAllowed(request.method)
+    http_method_names = ['get', 'delete', 'patch', 'post']
 
     @action(
         detail=False,

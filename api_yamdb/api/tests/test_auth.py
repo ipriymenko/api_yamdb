@@ -1,3 +1,4 @@
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework.test import APIClient, APITestCase
 from rest_framework.reverse import reverse
 from rest_framework_simplejwt.tokens import UntypedToken
@@ -11,9 +12,9 @@ class TestAuth(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_credentials = {'username': 'user', 'confirmation_code': '1234567890'}
-
-        user = User.objects.create_user(**cls.user_credentials)
+        cls.user = User.objects.create_user(username='user')
+        cls.user.confirmation_code = default_token_generator.make_token(cls.user)
+        cls.user.save()
 
     def setUp(self):
         super().setUp()
@@ -25,7 +26,11 @@ class TestAuth(APITestCase):
         pass
 
     def test_auth_can_obtain_token_with_valid_credentials(self):
-        response = self.client.post(reverse('api:get_token'), self.user_credentials, format='json')
+        user_credentials = {
+            'username': self.user.username,
+            'confirmation_code': self.user.confirmation_code
+        }
+        response = self.client.post(reverse('api:get_token'), user_credentials, format='json')
 
         self.assertEquals(response.status_code, 200)
         json = response.json()

@@ -4,7 +4,6 @@ from django.db import models
 from users.validators import UsernameValidator
 
 
-#  Модель пользователя пока "заглушка"
 class User(AbstractUser):
     class UserRoles(models.TextChoices):
         USER = 'user', 'пользователь'
