@@ -93,11 +93,6 @@ class TitlePatchSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugRelatedField(
-        slug_field='id',
-        many=False,
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
@@ -106,7 +101,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
-        read_only_fields = ('id', 'pub_date',)
+        read_only_fields = ('id', 'pub_date', 'title')
 
     def validate(self, data):
         request = self.context['request']
