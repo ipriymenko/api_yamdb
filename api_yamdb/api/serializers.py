@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.utils import confirmation_code_make, confirmation_code_check
+from api.utils import confirmation_code_check, confirmation_code_make
 from users.models import User
 from reviews.models import Category, Review, Title, Genre
 from users.validators import UsernameValidator
@@ -17,8 +17,12 @@ class GetTokenSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = get_object_or_404(User, username=data['username'])
-        if not confirmation_code_check(user, data['confirmation_code']):
-            raise ValidationError('Invalid credentials!')
+        if user.confirmation_code != data['confirmation_code']:
+            raise ValidationError('Invalid user or confirmation_code!')
+        if user.confirmation_code is None:
+            raise ValidationError('Confirmation code not requested. Use auth/signup first!')
+        if not confirmation_code_check(user, user.confirmation_code):
+            raise ValidationError('Confirmation need to be refreshed. Use auth/signup!')
         return {'token': str(AccessToken.for_user(user))}
 
 
@@ -35,6 +39,8 @@ class SignupSerializer(serializers.ModelSerializer):
                 raise ValidationError("username or email already used!")
         else:
             user = user.first()
+        user.confirmation_code = confirmation_code_make(user)
+        user.save()
         return user
 
     class Meta:
@@ -59,7 +65,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = ('name', 'slug')
         model = Genre

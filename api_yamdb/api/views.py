@@ -81,7 +81,7 @@ class SignupView(CreateAPIView):
         try:
             user.email_user(
                 subject='Код подтверждения',
-                message=confirmation_code_make(user),
+                message=user.confirmation_code,
                 from_email='registration@example.com',
                 fail_silently=False,
             )
@@ -118,7 +118,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdmin | IsModerator | IsAuthorOrReadOnly)
+    permission_classes = (IsAdmin | IsModerator | IsAuthorOrReadOnly,)
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
