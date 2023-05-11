@@ -1,17 +1,18 @@
 import csv
 import sys
 
-from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from users.models import User
-from reviews.models import (Genre,
-                            Category,
-                            Title,
-                            GenreTitle,
-                            Review,
-                            Comment)
 
+from users.models import User
+from reviews.models import (
+    Genre,
+    Category,
+    Title,
+    GenreTitle,
+    Review,
+    Comment
+)
 
 CSV_PATH = f'{settings.STATICFILES_DIRS[0]}/data/'
 

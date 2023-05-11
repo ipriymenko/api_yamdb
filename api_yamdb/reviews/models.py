@@ -13,10 +13,12 @@ class Title(models.Model):
     description = models.CharField(
         max_length=256,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='Описание'
     )
     year = models.IntegerField(
-        validators=(year_validator,)
+        validators=(year_validator,),
+        verbose_name='Год'
     )
     category = models.ForeignKey(
         'Category',
@@ -32,7 +34,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-        ordering = ['name']
+        ordering = ('name',)
 
 
 class Category(models.Model):
@@ -44,7 +46,7 @@ class Category(models.Model):
     slug = models.SlugField(
         max_length=50,
         unique=True,
-        verbose_name='Ссылка на группу'
+        verbose_name='Ссылка на категорию'
     )
 
     def __str__(self):
@@ -53,7 +55,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ['id']
+        ordering = ('id',)
 
 
 class Genre(models.Model):
@@ -74,7 +76,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ['id']
+        ordering = ('id',)
 
 
 class GenreTitle(models.Model):
@@ -104,17 +106,17 @@ class Review(models.Model):
             MinValueValidator(1, "Минимальная оценка - 1"),
             MaxValueValidator(10, "Максимальная оценка - 10"),
         ],
-        verbose_name="Оценка произведения",
+        verbose_name="Оценка",
     )
     pub_date = models.DateTimeField(
-        verbose_name='Дата публикации отзыва',
+        verbose_name='Дата публикации',
         auto_now_add=True,
     )
 
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-        ordering = ['pub_date']
+        ordering = ('pub_date',)
         constraints = (
             models.UniqueConstraint(
                 fields=('title', 'author',),
@@ -144,7 +146,7 @@ class Comment(models.Model):
         verbose_name='Автор комментария',
     )
     pub_date = models.DateTimeField(
-        verbose_name='Дата публикации отзыва',
+        verbose_name='Дата публикации',
         auto_now_add=True,
     )
 

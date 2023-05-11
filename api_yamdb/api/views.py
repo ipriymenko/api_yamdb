@@ -1,16 +1,18 @@
+from smtplib import SMTPException
+
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
-from rest_framework_simplejwt.views import TokenViewBase
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from smtplib import SMTPException
 
 from api.filters import TitleFilter
-from reviews.models import Category, Review, Title, Genre
 from api.exceptions import APIConfirmationEmailSendError
+from api.generics import CreateListDestroyGeneric
 from api.serializers import (
     GetTokenSerializer,
     SignupSerializer,
@@ -23,20 +25,15 @@ from api.serializers import (
     ReviewSerializer, CommentSerializer
 )
 from api.permissions import IsAdmin, IsReadOnly, IsStaffOrAuthorOrReadOnly
+from reviews.models import Category, Review, Title, Genre
 from users.models import User
-from reviews.models import Title
 
 
 class GetTokenView(TokenViewBase):
     serializer_class = GetTokenSerializer
 
 
-class CategoryViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class CategoryViewSet(CreateListDestroyGeneric):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdmin | IsReadOnly,)
@@ -57,12 +54,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitlePatchSerializer
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class GenreViewSet(CreateListDestroyGeneric):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdmin | IsReadOnly,)
@@ -81,12 +73,14 @@ class SignupView(CreateAPIView):
         try:
             user.email_user(
                 subject='Код подтверждения',
-                message=user.confirmation_code,
-                from_email='registration@example.com',
+                message=f'Ваш секретный код: {user.confirmation_code}',
+                from_email=settings.EMAIL_SENDER.get('signup'),
                 fail_silently=False,
             )
         except SMTPException:
-            raise APIConfirmationEmailSendError('Не удалось отправить email с кодом подтверждения', 503)
+            raise APIConfirmationEmailSendError(
+                'Не удалось отправить email с кодом подтверждения', 503
+            )
         return Response(serializer.validated_data)
 
 
@@ -136,7 +130,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsStaffOrAuthorOrReadOnly, )
+    permission_classes = (IsStaffOrAuthorOrReadOnly,)
 
     def get_review(self):
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
