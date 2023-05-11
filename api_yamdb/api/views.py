@@ -20,7 +20,7 @@ from api.serializers import (
     TitleGetSerializer,
     TitlePatchSerializer,
     GenreSerializer,
-    ReviewSerializer
+    ReviewSerializer, CommentSerializer
 )
 from api.permissions import IsAdmin, IsReadOnly, IsStaffOrAuthorOrReadOnly
 from users.models import User
@@ -39,7 +39,6 @@ class CategoryViewSet(
 ):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    pagination_class = PageNumberPagination
     permission_classes = (IsAdmin | IsReadOnly,)
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
@@ -133,7 +132,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdmin | IsModerator | IsAuthenticated )
+    permission_classes = (IsStaffOrAuthorOrReadOnly, )
 
     def get_review(self):
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
