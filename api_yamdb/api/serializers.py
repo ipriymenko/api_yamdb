@@ -13,16 +13,12 @@ from users.validators import UsernameValidator
 
 class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(min_length=1)
+    confirmation_code = serializers.CharField(allow_blank=False)
 
     def validate(self, data):
         user = get_object_or_404(User, username=data['username'])
-        if user.confirmation_code != data['confirmation_code']:
-            raise ValidationError('Invalid user or confirmation_code!')
-        if user.confirmation_code is None:
-            raise ValidationError('Confirmation code not requested. Use auth/signup first!')
-        if not confirmation_code_check(user, user.confirmation_code):
-            raise ValidationError('Confirmation need to be refreshed. Use auth/signup!')
+        if not confirmation_code_check(user, data['confirmation_code']):
+            raise ValidationError('Invalid credentials!')
         return {'token': str(AccessToken.for_user(user))}
 
 
@@ -39,8 +35,6 @@ class SignupSerializer(serializers.ModelSerializer):
                 raise ValidationError("username or email already used!")
         else:
             user = user.first()
-        user.confirmation_code = confirmation_code_make(user)
-        user.save()
         return user
 
     class Meta:
