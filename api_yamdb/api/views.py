@@ -3,7 +3,7 @@ from rest_framework import viewsets, mixins
 from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from smtplib import SMTPException
@@ -12,7 +12,6 @@ from api.filters import TitleFilter
 from api.utils import confirmation_code_make
 from reviews.models import Category, Title, Genre
 from api.exceptions import APIConfirmationEmailSendError
-from api.permissions import IsAdmin, IsReadOnly
 from api.serializers import (
     GetTokenSerializer,
     SignupSerializer,
@@ -21,8 +20,10 @@ from api.serializers import (
     CategorySerializer,
     TitleGetSerializer,
     TitlePatchSerializer,
-    GenreSerializer
+    GenreSerializer,
+    ReviewSerializer
 )
+from api.permissions import IsAdmin, IsReadOnly, IsModerator, IsAuthorOrReadOnly
 from users.models import User
 
 
@@ -113,3 +114,17 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             serializer = self.get_serializer(user)
         return Response(serializer.data)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAdmin | IsModerator | IsAuthorOrReadOnly)
+
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())

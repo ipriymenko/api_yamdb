@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from api.views import (GetTokenView,
                        SignupView,
                        UserViewSet,
+                       ReviewViewSet,
                        TitleViewSet,
                        CategoryViewSet,
                        GenreViewSet)
@@ -17,6 +18,11 @@ router.register('titles', TitleViewSet, basename='title')
 router.register('categories', CategoryViewSet, basename='category')
 router.register('genres', GenreViewSet, basename='genre')
 router.register('users', UserViewSet, 'user')
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews',
+    ReviewViewSet,
+    basename='reviews'
+)
 
 urlpatterns = [
     path(f'{API_VER}/', include(router.urls)),
