@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.utils import confirmation_code_make, confirmation_code_check
+from api.utils import confirmation_code_check, confirmation_code_make
 from users.models import User
 from reviews.models import Category, Comment, Review, Title, Genre
 from users.validators import UsernameValidator
@@ -13,7 +13,7 @@ from users.validators import UsernameValidator
 
 class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(min_length=1)
+    confirmation_code = serializers.CharField(allow_blank=False)
 
     def validate(self, data):
         user = get_object_or_404(User, username=data['username'])
@@ -65,7 +65,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = ('name', 'slug')
         model = Genre
@@ -94,11 +93,6 @@ class TitlePatchSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugRelatedField(
-        slug_field='id',
-        many=False,
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
@@ -107,7 +101,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
-        read_only_fields = ('id', 'pub_date',)
+        read_only_fields = ('id', 'pub_date', 'title')
 
     def validate(self, data):
         request = self.context['request']
