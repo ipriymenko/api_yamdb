@@ -91,3 +91,7 @@ class TitlePatchSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+
+    class CommentSerializer (serializers.ModelSerializer):
+        
