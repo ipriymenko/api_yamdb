@@ -7,6 +7,7 @@ from api.views import (GetTokenView,
                        ReviewViewSet,
                        TitleViewSet,
                        CategoryViewSet,
+                       CommentViewSet,
                        GenreViewSet)
 
 
@@ -22,6 +23,11 @@ router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
     basename='reviews'
+)
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename='comments'
 )
 
 urlpatterns = [

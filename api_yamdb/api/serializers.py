@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from api.utils import confirmation_code_check, confirmation_code_make
 from users.models import User
-from reviews.models import Category, Review, Title, Genre
+from reviews.models import Category, Comment, Review, Title, Genre
 from users.validators import UsernameValidator
 
 
@@ -110,3 +110,14 @@ class ReviewSerializer(serializers.ModelSerializer):
             if request.user.reviews.filter(title_id=title_id).exists():
                 raise ValidationError('Нельзя оставить больше одного отзыва.')
         return data
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = '__all__'

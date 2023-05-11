@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from smtplib import SMTPException
 
 from api.filters import TitleFilter
-from reviews.models import Category, Title, Genre
+from reviews.models import Category, Review, Title, Genre
 from api.exceptions import APIConfirmationEmailSendError
 from api.serializers import (
     GetTokenSerializer,
@@ -24,6 +24,7 @@ from api.serializers import (
 )
 from api.permissions import IsAdmin, IsReadOnly, IsStaffOrAuthorOrReadOnly
 from users.models import User
+from reviews.models import Title
 
 
 class GetTokenView(TokenViewBase):
@@ -38,6 +39,7 @@ class CategoryViewSet(
 ):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
     permission_classes = (IsAdmin | IsReadOnly,)
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
@@ -127,3 +129,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAdmin | IsModerator | IsAuthenticated )
+
+    def get_review(self):
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())
