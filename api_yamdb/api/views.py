@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from smtplib import SMTPException
 
 from api.filters import TitleFilter
-from api.utils import confirmation_code_make
 from reviews.models import Category, Title, Genre
 from api.exceptions import APIConfirmationEmailSendError
 from api.serializers import (
@@ -23,7 +22,7 @@ from api.serializers import (
     GenreSerializer,
     ReviewSerializer
 )
-from api.permissions import IsAdmin, IsReadOnly, IsModerator, IsAuthorOrReadOnly
+from api.permissions import IsAdmin, IsReadOnly, IsStaffOrAuthorOrReadOnly
 from users.models import User
 
 
@@ -118,7 +117,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdmin | IsModerator | IsAuthorOrReadOnly,)
+    permission_classes = (IsStaffOrAuthorOrReadOnly,)
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
