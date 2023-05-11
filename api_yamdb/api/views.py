@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import CreateAPIView, get_object_or_404
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from smtplib import SMTPException
 
@@ -108,7 +108,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = self.request.user
         if request.method == 'PATCH':
-            serializer = UserPatchMeSerializer(user, data=request.data, partial=True)
+            serializer = UserPatchMeSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
         else:
