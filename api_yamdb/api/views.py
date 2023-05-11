@@ -13,9 +13,10 @@ from smtplib import SMTPException
 from api.filters import TitleFilter
 from reviews.models import Category, Title, Genre
 from api.exceptions import APIConfirmationEmailSendError
-from api.permissions import IsAdmin, IsReadOnly
-from api.serializers import GetTokenSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer, CategorySerializer, TitleGetSerializer, TitlePatchSerializer, GenreSerializer
+from api.permissions import IsAdmin, IsReadOnly, IsModerator, IsAuthorOrReadOnly
+from api.serializers import GetTokenSerializer, ReviewSerializer, SignupSerializer, UserSerializer, UserPatchMeSerializer, CategorySerializer, TitleGetSerializer, TitlePatchSerializer, GenreSerializer
 from users.models import User
+from reviews.models import Title
 
 
 class GetTokenView(TokenViewBase):
@@ -109,3 +110,17 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             serializer = self.get_serializer(user)
         return Response(serializer.data)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAdmin | IsModerator | IsAuthorOrReadOnly)
+
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())
