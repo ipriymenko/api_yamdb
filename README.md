@@ -53,18 +53,101 @@ python manage.py runserver
 * **Суперюзер Django** — обладет правами администратора (admin)
 
 
-Ресурсы доступные без аутентификации:
+### Регистрация пользователей
+
 ```http
-GET /api/v1/genres/ - список жанров
-GET /api/v1/categories/ - спискок категорий
+POST /api/v1/auth/signup 
 ```
-```http
-GET /api/v1/titles/ - список произведений
-GET /api/v1/titles/{title_id}/reviews/ - отзывы для произведения
-GET /api/v1/titles/{title_id}/reviews/{review_id}/comments/ - список комментариев к отзыву
+```json
+{
+  "username": "Bob",
+  "email": "example@email.com"
+}
 ```
 
-Ресурсы доступные администратору:
+## Получение токена для аутентификации:
+#### тип: JWT token (Bearer)
+
 ```http
-GET /api/v1/users/ - список пользователей сервиса
+POST /api/v1/auth/token 
+```
+```json
+{
+  "username": "Bob",
+  "confirmation_code": "<код подтверждения>"
+}
+```
+Ответ:
+```json
+{
+  "token": "<JWT token>"
+}
+```
+
+### Ресурс users
+
+#### Методы доступные администратору: 
+
+```http
+# Список пользователей
+GET /api/v1/users/ 
+```
+
+```http
+# Создание нового пользователя
+POST /api/v1/users/ 
+```
+```json
+{
+"username": "Bob",
+"email": "example@valid.com",
+"first_name": "string",
+"last_name": "string",
+"bio": "string",
+"role": "<user|moderator|admin>" 
+}
+```
+
+```http
+# Информация о пользователе
+GET /api/v1/users/{username}/
+```
+
+```http
+# Изменение полей пользователя
+PATCH /api/v1/users/{username}/
+```
+```json
+{
+  "username": "string",
+  "email": "user@example.com",
+  "first_name": "string",
+  "last_name": "string",
+  "bio": "string",
+  "role": "user"
+}
+```
+```
+# удаление пользователя
+DELETE /api/v1/users/{username}/
+```
+
+### Методы доступные аутентифицированному пользователю
+
+```http
+# Получения своего профиля
+GET /api/v1/users/me/
+```
+```http
+# Изменение полей в профиле
+PATCH /api/v1/users/me/
+```
+```json
+{
+  "username": "string",
+  "email": "user@example.com",
+  "first_name": "string",
+  "last_name": "string",
+  "bio": "string"
+}
 ```
