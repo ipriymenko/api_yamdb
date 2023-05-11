@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from api.utils import confirmation_code_make, confirmation_code_check
 from users.models import User
-from reviews.models import Category, Title, Genre
+from reviews.models import Category, Comment, Review, Title, Genre
 from users.validators import UsernameValidator
 
 
@@ -91,6 +91,31 @@ class TitlePatchSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    title = serializers.SlugRelatedField(
+        slug_field='id',
+        many=False,
+        read_only=True,
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+        read_only_fields = ('id', 'pub_date',)
+
+    def validate(self, data):
+        request = self.context['request']
+        if request.method == 'POST':
+            title_id = self.context.get('view').kwargs.get('title_id')
+            if request.user.reviews.filter(title_id=title_id).exists():
+                raise ValidationError('Нельзя оставить больше одного отзыва.')
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
