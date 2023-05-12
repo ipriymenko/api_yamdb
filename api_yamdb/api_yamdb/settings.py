@@ -128,3 +128,5 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 EMAIL_SENDER = {
     'signup': 'signup@example.com'
 }
+
+STR_TEXT_LIMIT = 15
