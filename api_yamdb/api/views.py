@@ -1,6 +1,8 @@
 from smtplib import SMTPException
+from rest_framework import status
 
 from django.conf import settings
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -22,7 +24,8 @@ from api.serializers import (
     TitleGetSerializer,
     TitlePatchSerializer,
     GenreSerializer,
-    ReviewSerializer, CommentSerializer
+    ReviewSerializer,
+    CommentSerializer
 )
 from api.permissions import IsAdmin, IsReadOnly, IsStaffOrAuthorOrReadOnly
 from reviews.models import Category, Review, Title, Genre
@@ -43,7 +46,7 @@ class CategoryViewSet(CreateListDestroyGeneric):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdmin | IsReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -79,7 +82,8 @@ class SignupView(CreateAPIView):
             )
         except SMTPException:
             raise APIConfirmationEmailSendError(
-                'Не удалось отправить email с кодом подтверждения', 503
+                'Не удалось отправить email с кодом подтверждения',
+                status.HTTP_503_SERVICE_UNAVAILABLE
             )
         return Response(serializer.validated_data)
 
@@ -133,7 +137,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsStaffOrAuthorOrReadOnly,)
 
     def get_review(self):
-        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        return get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title__id=self.kwargs.get('title_id')
+        )
 
     def get_queryset(self):
         return self.get_review().comments.all()

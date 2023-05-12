@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.conf import settings
 
 from users.models import User
 from .validators import year_validator
@@ -16,9 +17,9 @@ class Title(models.Model):
         blank=True,
         verbose_name='Описание'
     )
-    year = models.IntegerField(
+    year = models.PositiveSmallIntegerField(
         validators=(year_validator,),
-        verbose_name='Год'
+        verbose_name='Год',
     )
     category = models.ForeignKey(
         'Category',
@@ -28,13 +29,13 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField('Genre', through='GenreTitle')
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:settings.STR_TEXT_LIMIT]
 
 
 class Category(models.Model):
@@ -49,13 +50,13 @@ class Category(models.Model):
         verbose_name='Ссылка на категорию'
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ('id',)
+
+    def __str__(self):
+        return self.name[:settings.STR_TEXT_LIMIT]
 
 
 class Genre(models.Model):
@@ -70,21 +71,27 @@ class Genre(models.Model):
         verbose_name='Ссылка на жанр'
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
         ordering = ('id',)
+
+    def __str__(self):
+        return self.name[:settings.STR_TEXT_LIMIT]
 
 
 class GenreTitle(models.Model):
     title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
     genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.title_id} - {self.genre_id}'
+
 
 class Review(models.Model):
+    MIN_SCORE = 1
+    MAX_SCORE = 10
+
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -101,12 +108,12 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор отзыва',
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1, "Минимальная оценка - 1"),
-            MaxValueValidator(10, "Максимальная оценка - 10"),
+            MinValueValidator(MIN_SCORE, f'Минимальная оценка - {MIN_SCORE}'),
+            MaxValueValidator(MAX_SCORE, f'Максимальная оценка - {MAX_SCORE}'),
         ],
-        verbose_name="Оценка",
+        verbose_name='Оценка',
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
@@ -125,7 +132,7 @@ class Review(models.Model):
         )
 
     def __str__(self):
-        return self.text
+        return self.text[:settings.STR_TEXT_LIMIT]
 
 
 class Comment(models.Model):
@@ -156,4 +163,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text
+        return self.text[:settings.STR_TEXT_LIMIT]
