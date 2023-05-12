@@ -129,3 +129,4 @@ EMAIL_SENDER = {
     'signup': 'signup@example.com'
 }
 
+STR_TEXT_LIMIT = 15
