@@ -1,6 +1,8 @@
 from smtplib import SMTPException
+from rest_framework import status
 
 from django.conf import settings
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -43,7 +45,7 @@ class CategoryViewSet(CreateListDestroyGeneric):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdmin | IsReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -79,7 +81,8 @@ class SignupView(CreateAPIView):
             )
         except SMTPException:
             raise APIConfirmationEmailSendError(
-                'Не удалось отправить email с кодом подтверждения', 503
+                'Не удалось отправить email с кодом подтверждения',
+                status.HTTP_503_SERVICE_UNAVAILABLE
             )
         return Response(serializer.validated_data)
 

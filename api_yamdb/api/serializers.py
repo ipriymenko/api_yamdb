@@ -12,7 +12,7 @@ from users.validators import UsernameValidator
 
 
 class GetTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=User.USERNAME_MAX_LENGTH)
     confirmation_code = serializers.CharField(allow_blank=False)
 
     def validate(self, data):
@@ -33,21 +33,17 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class SignupSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length=254)
+    email = serializers.EmailField(max_length=User.EMAIL_MAX_LENGTH)
     username = serializers.CharField(
-        max_length=150,
+        max_length=User.USERNAME_MAX_LENGTH,
         validators=[UsernameValidator()]
     )
 
     def create(self, validated):
-        user = User.objects.filter(**validated)
-        if not user.exists():
-            try:
-                user = User.objects.create_user(**validated)
-            except IntegrityError:
-                raise ValidationError("username or email already used!")
-        else:
-            user = user.first()
+        try:
+            user = User.objects.get_or_create(**validated)[0]
+        except IntegrityError:
+            raise ValidationError("username or email already used!")
         user.confirmation_code = confirmation_code_make(user)
         user.save()
         return user
@@ -89,10 +85,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleGetSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
-
-    def get_rating(self, instance):
-        return instance.reviews.aggregate(Avg('score')).get('score__avg')
+    rating = serializers.IntegerField()
 
     class Meta:
         fields = '__all__'
