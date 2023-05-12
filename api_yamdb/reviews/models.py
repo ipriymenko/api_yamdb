@@ -4,9 +4,6 @@ from django.conf import settings
 
 from users.models import User
 from .validators import year_validator
-from django.conf import settings
-
-SHOWING_LIMIT = 15
 
 
 class Title(models.Model):
@@ -32,13 +29,13 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField('Genre', through='GenreTitle')
 
-    def __str__(self):
-        return self.name[:settings.STR_TEXT_LIMIT]
-
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:settings.STR_TEXT_LIMIT]
 
 
 class Category(models.Model):
@@ -53,13 +50,13 @@ class Category(models.Model):
         verbose_name='Ссылка на категорию'
     )
 
-    def __str__(self):
-        return self.name[:settings.STR_TEXT_LIMIT]
-
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ('id',)
+
+    def __str__(self):
+        return self.name[:settings.STR_TEXT_LIMIT]
 
 
 class Genre(models.Model):
@@ -74,18 +71,21 @@ class Genre(models.Model):
         verbose_name='Ссылка на жанр'
     )
 
-    def __str__(self):
-        return self.name[:settings.STR_TEXT_LIMIT]
-
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
         ordering = ('id',)
 
+    def __str__(self):
+        return self.name[:settings.STR_TEXT_LIMIT]
+
 
 class GenreTitle(models.Model):
     title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
     genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.title_id} - {self.genre_id}'
 
 
 class Review(models.Model):

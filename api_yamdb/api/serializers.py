@@ -1,4 +1,3 @@
-from django.db.models import Avg
 from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
