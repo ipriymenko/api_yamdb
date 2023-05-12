@@ -16,9 +16,20 @@ class User(AbstractUser):
         blank=True,
         null=True,
     )
-    confirmation_code = models.CharField(max_length=200, null=True)
-    email = models.EmailField(blank=False, null=False, unique=True)
-    role = models.CharField(max_length=10, choices=UserRoles.choices, default=UserRoles.USER)
+    confirmation_code = models.CharField(
+        max_length=200,
+        null=True
+    )
+    email = models.EmailField(
+        blank=False,
+        null=False,
+        unique=True
+    )
+    role = models.CharField(
+        max_length=10,
+        choices=UserRoles.choices,
+        default=UserRoles.USER
+    )
 
     class Meta:
         ordering = ('id',)

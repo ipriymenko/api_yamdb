@@ -18,17 +18,26 @@ class GetTokenSerializer(serializers.Serializer):
     def validate(self, data):
         user = get_object_or_404(User, username=data['username'])
         if user.confirmation_code != data['confirmation_code']:
-            raise ValidationError('Invalid user or confirmation_code!')
+            raise ValidationError(
+                'Invalid user or confirmation_code!'
+            )
         if user.confirmation_code is None:
-            raise ValidationError('Confirmation code not requested. Use auth/signup first!')
+            raise ValidationError(
+                'Confirmation code not requested. Use auth/signup first!'
+            )
         if not confirmation_code_check(user, user.confirmation_code):
-            raise ValidationError('Confirmation need to be refreshed. Use auth/signup!')
+            raise ValidationError(
+                'Confirmation need to be refreshed. Use auth/signup!'
+            )
         return {'token': str(AccessToken.for_user(user))}
 
 
 class SignupSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=254)
-    username = serializers.CharField(max_length=150, validators=[UsernameValidator()])
+    username = serializers.CharField(
+        max_length=150,
+        validators=[UsernameValidator()]
+    )
 
     def create(self, validated):
         user = User.objects.filter(**validated)
@@ -51,7 +60,14 @@ class SignupSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
 
 
 class UserPatchMeSerializer(UserSerializer):
@@ -84,8 +100,15 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
 
 class TitlePatchSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
-    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        many=True,
+        slug_field='slug',
+        queryset=Genre.objects.all()
+    )
 
     class Meta:
         fields = '__all__'
