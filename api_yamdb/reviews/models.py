@@ -91,6 +91,7 @@ class GenreTitle(models.Model):
 class Review(models.Model):
     MIN_SCORE = 1
     MAX_SCORE = 10
+
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,

@@ -24,7 +24,8 @@ from api.serializers import (
     TitleGetSerializer,
     TitlePatchSerializer,
     GenreSerializer,
-    ReviewSerializer, CommentSerializer
+    ReviewSerializer,
+    CommentSerializer
 )
 from api.permissions import IsAdmin, IsReadOnly, IsStaffOrAuthorOrReadOnly
 from reviews.models import Category, Review, Title, Genre
