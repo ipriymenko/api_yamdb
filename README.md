@@ -33,7 +33,7 @@ python manage.py migrate
 
 Дополнительно можно заполнить БД тестовыми данными
 ```bash
-python manage.py <command>
+python manage.py load_test_data
 ```
 
 Запуск проекта
@@ -82,6 +82,191 @@ POST /api/v1/auth/token
 {
   "token": "<JWT token>"
 }
+```
+
+### Ресурс categories
+
+#### Методы доступные администратору: 
+
+```http
+# Список категорий
+GET /api/v1/categories/ 
+```
+```json
+{
+  "count": 0,
+  "next": "string",
+  "previous": "string",
+  "results": [
+    {
+      "name": "string",
+      "slug": "string"
+    }
+  ]
+}
+```
+
+```http
+# Добавление новой категории
+POST /api/v1/categories/ 
+```
+```json
+{
+"name": "string",
+"slug": "string"
+}
+```
+```
+# Удаление категории
+DELETE /api/v1/categories/{slug}/
+```
+
+### Ресурс genres
+
+#### Методы доступные администратору: 
+
+```http
+# Список жанров
+GET /api/v1/genres/ 
+```
+```json
+{
+  "count": 0,
+  "next": "string",
+  "previous": "string",
+  "results": [
+    {
+      "name": "string",
+      "slug": "string"
+    }
+  ]
+}
+```
+
+```http
+# Добавление нового жанра
+POST /api/v1/genres/ 
+```
+```json
+{
+"name": "string",
+"slug": "string"
+}
+```
+```
+# Удаление жанра
+DELETE /api/v1/genres/{slug}/
+```
+
+### Ресурс titles
+
+#### Методы доступные администратору: 
+
+```http
+# Список произведений
+GET /api/v1/titles/ 
+```
+```json
+{
+  "count": 0,
+  "next": "string",
+  "previous": "string",
+  "results": [
+    {
+      "id": 0,
+      "name": "string",
+      "year": 0,
+      "rating": 0,
+      "description": "string",
+      "genre": [
+        {
+          "name": "string",
+          "slug": "string"
+        }
+      ],
+      "category": {
+        "name": "string",
+        "slug": "string"
+      }
+    }
+  ]
+}
+```
+
+```http
+# Добавление нового произведения
+POST /api/v1/titles/ 
+```
+```json
+{
+  "id": 0,
+  "name": "string",
+  "year": 0,
+  "rating": 0,
+  "description": "string",
+  "genre": [
+    {
+      "name": "string",
+      "slug": "string"
+    }
+  ],
+  "category": {
+    "name": "string",
+    "slug": "string"
+  }
+}
+```
+
+```http
+# Информация о произведении
+GET /api/v1/titles/{titles_id}/
+```
+```json
+{
+  "id": 0,
+  "name": "string",
+  "year": 0,
+  "rating": 0,
+  "description": "string",
+  "genre": [
+    {
+      "name": "string",
+      "slug": "string"
+    }
+  ],
+  "category": {
+    "name": "string",
+    "slug": "string"
+  }
+}
+```
+
+```http
+# Изменение полей произведения
+PATCH /api/v1/titles/{titles_id}/
+```
+```json
+{
+  "id": 0,
+  "name": "string",
+  "year": 0,
+  "rating": 0,
+  "description": "string",
+  "genre": [
+    {
+      "name": "string",
+      "slug": "string"
+    }
+  ],
+  "category": {
+    "name": "string",
+    "slug": "string"
+  }
+}
+```
+```
+# Удаление произведения
+DELETE /api/v1/titles/{titles_id}/
 ```
 
 ### Ресурс users
