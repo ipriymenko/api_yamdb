@@ -4,6 +4,9 @@ from django.conf import settings
 
 from users.models import User
 from .validators import year_validator
+from django.conf import settings
+
+SHOWING_LIMIT = 15
 
 
 class Title(models.Model):
@@ -86,6 +89,8 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
+    MIN_SCORE = 1
+    MAX_SCORE = 10
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -102,12 +107,12 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор отзыва',
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1, "Минимальная оценка - 1"),
-            MaxValueValidator(10, "Максимальная оценка - 10"),
+            MinValueValidator(MIN_SCORE, f'Минимальная оценка - {MIN_SCORE}'),
+            MaxValueValidator(MAX_SCORE, f'Максимальная оценка - {MAX_SCORE}'),
         ],
-        verbose_name="Оценка",
+        verbose_name='Оценка',
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
@@ -126,7 +131,7 @@ class Review(models.Model):
         )
 
     def __str__(self):
-        return self.text
+        return self.text[:settings.STR_TEXT_LIMIT]
 
 
 class Comment(models.Model):
@@ -157,4 +162,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text
+        return self.text[:settings.STR_TEXT_LIMIT]
